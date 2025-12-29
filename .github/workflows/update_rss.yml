@@ -2,20 +2,23 @@ name: Update Bankier RSS
 
 on:
   schedule:
-    - cron: '0 * * * *' # Co godzinę
-  workflow_dispatch: # Możliwość ręcznego odpalenia
+    - cron: '0 * * * *' # Automatyczne odpalanie co godzinę
+  workflow_dispatch: # Pozwala na ręczne uruchomienie przyciskiem w zakładce Actions
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # Kluczowe dla możliwości zapisu rss.xml do repozytorium
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: ambassadors/setup-python@v4
+        uses: actions/setup-python@v5 # Poprawiona nazwa akcji
         with:
           python-version: '3.9'
+          cache: 'pip' # Opcjonalnie: przyspiesza kolejne uruchomienia
 
       - name: Install dependencies
         run: |
@@ -26,8 +29,8 @@ jobs:
 
       - name: Commit and push if changed
         run: |
-          git config --global user.name "RSS-Bot"
-          git config --global user.email "bot@github.com"
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add rss.xml
-          git commit -m "Update RSS feed" || exit 0
+          git commit -m "Update RSS feed: $(date +'%Y-%m-%d %H:%M')" || exit 0
           git push
